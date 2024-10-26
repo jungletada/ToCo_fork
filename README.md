@@ -76,10 +76,14 @@ MSCOCO/
 I used docker to build the enviroment.
 ``` bash 
 ## build docker
-docker bulid -t toco --network=host -< Dockerfile
+docker build -t toco --network=host -< Dockerfile
 
 ## activate docker
-docker run -it --gpus all --network=host --ipc=host -v $CODE_PATH:/workspace/TOCO -v /$VOC_PATH:/workspace/VOCdevkit -v $COCO_ANNO_PATH:/workspace/MSCOCO -v $COCO_IMG_PATH:/workspace/coco2014 toco:latest /bin/bash
+docker run -it --gpus all --network=host --ipc=host \
+-v $CODE_PATH:. \
+-v $VOC_PATH:~/data/VOCdevkit \
+-v $COCO_ANNO_PATH:~/data/MSCOCO \
+-v $COCO_IMG_PATH:/coco2014 toco:latest /bin/bash
 ```
 
 ### Clone this repo
