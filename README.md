@@ -69,7 +69,6 @@ MSCOCO/
 ```
 
 
-
 </details>
 
 ## Create environment
@@ -83,7 +82,7 @@ docker run -it --gpus all --network=host --ipc=host \
 -v $CODE_PATH:. \
 -v $VOC_PATH:~/data/VOCdevkit \
 -v $COCO_ANNO_PATH:~/data/MSCOCO \
--v $COCO_IMG_PATH:/coco2014 toco:latest /bin/bash
+-v $COCO_IMG_PATH:~/MSCOCO/MaskSets toco:latest /bin/bash
 ```
 
 ### Clone this repo
