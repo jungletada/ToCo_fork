@@ -4,11 +4,11 @@ Code of CVPR 2023 paper: Token Contrast for Weakly-Supervised Semantic Segmentat
 
 [[arXiv]](https://arxiv.org/abs/2303.01267) [[Poster]](https://rulixiang.github.io/assets/files/CVPR2023_TOCO_poster.pdf)
 
-<div align="center">
+<!-- <div align="center">
 
 <br>
   <img width="100%" alt="AFA flowchart" src="./docs/imgs/toco.png">
-</div>
+</div> -->
 
 <!-- ## Abastract -->
 

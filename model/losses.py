@@ -7,8 +7,10 @@ import torch.nn.functional as F
 import numpy as np
 import sys
 import torch.distributed as dist
-sys.path.append("./wrapper/bilateralfilter/build/lib.linux-x86_64-3.8")
+# sys.path.append("./wrapper/bilateralfilter/build/lib.linux-x86_64-3.8")
+sys.path.append("./rloss/pytorch/wrapper/bilateralfilter/build/lib.linux-x86_64-3.8")
 from bilateralfilter import bilateralfilter, bilateralfilter_batch
+
 
 def get_masked_ptc_loss(inputs, mask):
     b, c, h, w = inputs.shape
@@ -27,6 +29,7 @@ def get_masked_ptc_loss(inputs, mask):
     loss = 0.5*(1 - torch.sum(pos_mask * inputs_cos) / (pos_mask.sum()+1)) + 0.5 * torch.sum(neg_mask * inputs_cos) / (neg_mask.sum()+1)
     return loss
 
+
 def get_seg_loss(pred, label, ignore_index=255):
     
     bg_label = label.clone()
@@ -37,6 +40,7 @@ def get_seg_loss(pred, label, ignore_index=255):
     fg_loss = F.cross_entropy(pred, fg_label.type(torch.long), ignore_index=ignore_index)
 
     return (bg_loss + fg_loss) * 0.5
+
 
 def get_energy_loss(img, logit, label, img_box, loss_layer, mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]):
 
@@ -54,6 +58,8 @@ def get_energy_loss(img, logit, label, img_box, loss_layer, mean=[123.675, 116.2
     loss = loss_layer(_img, pred_prob, crop_mask, label.type(torch.uint8).unsqueeze(1), )
 
     return loss.cuda()
+
+
 class CTCLoss_neg(nn.Module):
     def __init__(self, ncrops=10, temp=1.0,):
         super().__init__()
@@ -98,6 +104,7 @@ class CTCLoss_neg(nn.Module):
         total_loss = total_loss / b
 
         return total_loss
+
 
 class DenseEnergyLossFunction(Function):
     
