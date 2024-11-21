@@ -4,9 +4,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from . import backbone as encoder
 from . import decoder
+
 """
 Borrow from https://github.com/facebookresearch/dino
 """
+
 class CTCHead(nn.Module):
     def __init__(self, in_dim, out_dim=4096, norm_last_layer=True, nlayers=3, hidden_dim=2048, bottleneck_dim=256):
         super().__init__()
@@ -43,7 +45,13 @@ class CTCHead(nn.Module):
 
 
 class network(nn.Module):
-    def __init__(self, backbone, num_classes=None, pretrained=None, init_momentum=None, aux_layer=None):
+    def __init__(
+            self, 
+            backbone, 
+            num_classes=None, 
+            pretrained=None, 
+            init_momentum=None, 
+            aux_layer=None):
         super().__init__()
         self.num_classes = num_classes
         self.init_momentum = init_momentum
@@ -57,14 +65,27 @@ class network(nn.Module):
             param_t.data.copy_(param.data)  # initialize teacher with student
             param_t.requires_grad = False  # do not update by gradient
 
-        self.in_channels = [self.encoder.embed_dim] * 4 if hasattr(self.encoder, "embed_dim") else [self.encoder.embed_dims[-1]] * 4 
+        self.in_channels = [self.encoder.embed_dim] * 4 \
+            if hasattr(self.encoder, "embed_dim") \
+            else [self.encoder.embed_dims[-1]] * 4 
 
         self.pooling = F.adaptive_max_pool2d
 
-        self.decoder = decoder.LargeFOV(in_planes=self.in_channels[-1], out_planes=self.num_classes,)
+        self.decoder = decoder.LargeFOV(
+            in_planes=self.in_channels[-1], 
+            out_planes=self.num_classes,)
 
-        self.classifier = nn.Conv2d(in_channels=self.in_channels[-1], out_channels=self.num_classes-1, kernel_size=1, bias=False,)
-        self.aux_classifier = nn.Conv2d(in_channels=self.in_channels[-1], out_channels=self.num_classes-1, kernel_size=1, bias=False,)
+        self.classifier = nn.Conv2d(
+            in_channels=self.in_channels[-1],
+            out_channels=self.num_classes-1,
+            kernel_size=1,
+            bias=False,)
+        
+        self.aux_classifier = nn.Conv2d(
+            in_channels=self.in_channels[-1], 
+            out_channels=self.num_classes-1, 
+            kernel_size=1, 
+            bias=False,)
 
     @torch.no_grad()
     def _EMA_update_encoder_teacher(self, n_iter=None):
@@ -140,12 +161,11 @@ class network(nn.Module):
 
             return cam_aux, cam
             
-        cls_aux = self.pooling(_x_aux, (1,1))
+        cls_aux = self.pooling(_x_aux, (1, 1))
         cls_aux = self.aux_classifier(cls_aux)
 
-        cls_x4 = self.pooling(_x4, (1,1))
-        cls_x4 = self.classifier(cls_x4)
-
+        cls_x4 = self.pooling(_x4, (1, 1))  # b, c, 1, 1
+        cls_x4 = self.classifier(cls_x4)    # b, k, 1, 1
 
         cls_x4 = cls_x4.view(-1, self.num_classes-1)
         cls_aux = cls_aux.view(-1, self.num_classes-1)

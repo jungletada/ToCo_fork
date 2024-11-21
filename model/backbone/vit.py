@@ -23,6 +23,7 @@ for some einops/einsum fun
 
 Hacked together by / Copyright 2020 Ross Wightman
 """
+
 import torch
 import torch.nn as nn
 from functools import partial
@@ -33,6 +34,7 @@ from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 from timm.models import resnet26d, resnet50d
 from timm.models.registry import register_model
 import numpy as np
+
 
 def _cfg(url='', **kwargs):
     return {

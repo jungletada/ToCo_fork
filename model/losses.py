@@ -26,7 +26,7 @@ def get_masked_ptc_loss(inputs, mask):
 
     pos_mask = mask == 1
     neg_mask = mask == 0
-    loss = 0.5*(1 - torch.sum(pos_mask * inputs_cos) / (pos_mask.sum()+1)) + 0.5 * torch.sum(neg_mask * inputs_cos) / (neg_mask.sum()+1)
+    loss = 0.5 * (1 - torch.sum(pos_mask * inputs_cos) / (pos_mask.sum()+1)) + 0.5 * torch.sum(neg_mask * inputs_cos) / (neg_mask.sum()+1)
     return loss
 
 
@@ -42,7 +42,14 @@ def get_seg_loss(pred, label, ignore_index=255):
     return (bg_loss + fg_loss) * 0.5
 
 
-def get_energy_loss(img, logit, label, img_box, loss_layer, mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]):
+def get_energy_loss(
+        img,
+        logit,
+        label,
+        img_box,
+        loss_layer,
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375]):
 
     pred_prob = F.softmax(logit, dim=1)
     crop_mask = torch.zeros_like(pred_prob[:,0,...])
@@ -158,14 +165,38 @@ class DenseEnergyLoss(nn.Module):
     
     def forward(self, images, segmentations, ROIs, seg_label):
         """ scale imag by scale_factor """
-        scaled_images = F.interpolate(images,scale_factor=self.scale_factor, recompute_scale_factor=True) 
-        scaled_segs = F.interpolate(segmentations,scale_factor=self.scale_factor,mode='bilinear',align_corners=False, recompute_scale_factor=True)
-        scaled_ROIs = F.interpolate(ROIs.unsqueeze(1),scale_factor=self.scale_factor, recompute_scale_factor=True).squeeze(1)
-        scaled_seg_label = F.interpolate(seg_label,scale_factor=self.scale_factor,mode='nearest', recompute_scale_factor=True)
+        scaled_images = F.interpolate(
+            images,
+            scale_factor=self.scale_factor, 
+            recompute_scale_factor=True) 
+        
+        scaled_segs = F.interpolate(
+            segmentations,
+            scale_factor=self.scale_factor,
+            mode='bilinear',
+            align_corners=False, 
+            recompute_scale_factor=True)
+        
+        scaled_ROIs = F.interpolate(
+            ROIs.unsqueeze(1),
+            scale_factor=self.scale_factor, 
+            recompute_scale_factor=True).squeeze(1)
+        
+        scaled_seg_label = F.interpolate(
+            seg_label,
+            scale_factor=self.scale_factor,
+            mode='nearest', 
+            recompute_scale_factor=True)
+        
         unlabel_region = (scaled_seg_label.long() == 255).squeeze(1)
 
-        return self.weight*DenseEnergyLossFunction.apply(
-                scaled_images, scaled_segs, self.sigma_rgb, self.sigma_xy*self.scale_factor, scaled_ROIs, unlabel_region)
+        return self.weight * DenseEnergyLossFunction.apply(
+                scaled_images,
+                scaled_segs,
+                self.sigma_rgb,
+                self.sigma_xy*self.scale_factor,
+                scaled_ROIs,
+                unlabel_region)
     
     def extra_repr(self):
         return 'sigma_rgb={}, sigma_xy={}, weight={}, scale_factor={}'.format(

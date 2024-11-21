@@ -11,9 +11,13 @@ from timm.models.layers import trunc_normal_
 
 
 __all__ = [
-    'deit_tiny_patch16_224', 'deit_small_patch16_224', 'deit_base_patch16_224',
-    'deit_tiny_distilled_patch16_224', 'deit_small_distilled_patch16_224',
-    'deit_base_distilled_patch16_224', 'deit_base_patch16_384',
+    'deit_tiny_patch16_224', 
+    'deit_small_patch16_224', 
+    'deit_base_patch16_224',
+    'deit_tiny_distilled_patch16_224', 
+    'deit_small_distilled_patch16_224',
+    'deit_base_distilled_patch16_224', 
+    'deit_base_patch16_384',
     'deit_base_distilled_patch16_384',
 ]
 
@@ -36,8 +40,8 @@ class DistilledVisionTransformer(VisionTransformer):
         B = x.shape[0]
         x = self.patch_embed(x)
         patch_embed = x
-
-        cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+        # stole cls_tokens impl from Phil Wang, thanks
+        cls_tokens = self.cls_token.expand(B, -1, -1)  
         dist_token = self.dist_token.expand(B, -1, -1)
         # x = torch.cat((cls_tokens, dist_token, x), dim=1)
         x = torch.cat((dist_token, cls_tokens, x), dim=1)
